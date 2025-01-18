@@ -1,10 +1,12 @@
 import calendar
 import datetime
+import hashlib
 
 import jwt
 
-from constants import SECRET, ALGORITHM
-from flask import request, abort
+from constants import SECRET, ALGORITHM, PWD_HASH_SALT, PWD_HASH_ITERATION
+from flask import abort
+
 from service.user import UserService
 
 
@@ -12,44 +14,46 @@ class AuthService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def generate_tokens(self, username, password, is_refresh=False):
-        users = self.user_service.get_by_name(username)
-        right_user = None
-        for user in users:
-            if self.user_service.compare_password(user.password, password):
-                right_user = user
-                break
+    # def create(self, data: dict):
+    #     data["password"] = self.user_service.create_hash(data["password"])
+    #     self.user_service.create(data)
 
-        if right_user is None:
-            raise abort(404)
-
-        # user = self.user_service.get_by_name(username)
-        # if user is None or len(user) > 2:
-        #     raise abort(400)
-        #
-        # if not self.user_service.compare_password(user[0].password, password):
-        #     abort(400)
-
-        data = {
-            "username": username,
-            "password": password,
-            "role": right_user.role
-        }
+    def generate_tokens(self, user_data: dict):
 
         # 30 minutes for access token
         min30 = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=30)
-        data["exp"] = calendar.timegm(min30.timetuple())
-        access_token = jwt.encode(data, SECRET, algorithm=ALGORITHM)
+        user_data["exp"] = calendar.timegm(min30.timetuple())
+        access_token = jwt.encode(user_data, SECRET, algorithm=ALGORITHM)
 
         # 180 days for refresh_token
         days_180 = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=180)
-        data["exp"] = calendar.timegm(days_180.timetuple())
-        refresh_token = jwt.encode(data, SECRET, algorithm=ALGORITHM)
+        user_data["exp"] = calendar.timegm(days_180.timetuple())
+        refresh_token = jwt.encode(user_data, SECRET, algorithm=ALGORITHM)
 
         return {
-            "access token":access_token,
+            "access token": access_token,
             "refresh token": refresh_token
-            }
+        }
+
+    def get_by_email(self,emai: str):
+        return self.user_service.get_by_email(emai)
+
+    def log_in(self, email: str, password: str):
+        user = self.user_service.get_by_email(email)
+        if not user:
+            raise abort(404)
+        print(password)
+        print(user.password)
+        if self.compare_password(password, user.password):
+            return False
+        return True
+
+        # token = compare_password(user.password, password)
+
+    def compare_password(self, password_from_user, password):
+        password_from_user = self.user_service.create_hash(password_from_user)
+        print(password_from_user == password)
+        return password_from_user == password
 
     def approve_refresh_token(self, token):
         data = jwt.decode(jwt=token, key=SECRET, algorithms=[ALGORITHM])
