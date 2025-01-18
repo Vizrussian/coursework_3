@@ -12,7 +12,7 @@ class User(db.Model):
     favorite_genre = db.Column(db.String(255))
 
 
-class MovieSchema(Schema):
+class UserSchema(Schema):
     email = fields.String()
     name = fields.String()
     surname = fields.String()

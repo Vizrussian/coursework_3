@@ -1,11 +1,11 @@
-from dao.directors import DirectorDAO
-from dao.genres import GenreDAO
-from dao.movies import MovieDAO
+from dao.director import DirectorDAO
+from dao.genre import GenreDAO
+from dao.movie import MovieDAO
 from dao.user import UserDAO
 from service.auth import AuthService
-from service.directors import DirectorService
-from service.genres import GenreService
-from service.movies import MovieService
+from service.director import DirectorService
+from service.genre import GenreService
+from service.movie import MovieService
 from service.user import UserService
 from setup_db import db
 
