@@ -13,16 +13,21 @@ movies_schema = MovieSchema(many=True)
 class MoviesView(Resource):
     """The MoviesView class handles GET requests for the route /movies/"""
 
-    @auth_required
+    # @auth_required
     def get(self):
-        status = request.args.get("status")
-        page = request.args.get("page")
-        filters = {
-            "status": status,
-            "page": page,
-        }
-        movies = movie_service.get_all(filters)
-        return movies_schema.dump(movies), 200
+        try:
+            status = request.args.get("status")
+            page = request.args.get("page")
+            if status:
+                movies = movie_service.get_status(status)
+            if page:
+                if int(page) >= 1:
+                    movies = movie_service.get_page(int(page))
+            else:
+                movies = movie_service.get_all()
+            return movies_schema.dump(movies), 200
+        except:
+            return 'not found', 404
 
 
 @movie_ns.route("/<int:movie_id>")
@@ -31,5 +36,8 @@ class MovieView(Resource):
 
     # @auth_required
     def get(self, movie_id: int):
-        movie = movie_service.get_one(movie_id)
-        return movie_schema.dump(movie), 200
+        try:
+            movie = movie_service.get_one(movie_id)
+            return movie_schema.dump(movie), 200
+        except:
+            return "", 404
