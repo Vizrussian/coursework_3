@@ -10,7 +10,7 @@ class UserDAO:
         pass
 
     def get_by_email(self, email: str):
-        return self.session.query(User).filter(User.email == email).all()
+        return self.session.query(User).filter(User.email == email).one()
 
     def update(self, data):
         pass

@@ -40,19 +40,18 @@ class AuthService:
 
     def log_in(self, email: str, password: str):
         user = self.user_service.get_by_email(email)
-        if not user:
-            raise abort(404)
-        print(password)
-        print(user.password)
+        # if not user:
+        #     raise abort(404)
+        #
         if self.compare_password(password, user.password):
+            return True
+        else:
             return False
-        return True
 
         # token = compare_password(user.password, password)
 
     def compare_password(self, password_from_user, password):
         password_from_user = self.user_service.create_hash(password_from_user)
-        print(password_from_user == password)
         return password_from_user == password
 
     def approve_refresh_token(self, token):

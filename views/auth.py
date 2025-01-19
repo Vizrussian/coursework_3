@@ -41,8 +41,10 @@ class AuthLoginView(Resource):
             # не работает сравнение паролей
             if auth_service.log_in(email, password):
                 return "Log in success", 200
+            else:
+                return "email or password incorrect", 404
         except Exception as e:
-            return f"user not found {e}", 404
+            return f"Erorr: {e}", 400
 
     def put(self):
         tokens = request.json
